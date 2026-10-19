@@ -1,0 +1,19 @@
+{
+  "_comment": "Paste into the Lambda Test tab. These are API Gateway style events: the body is a JSON string.",
+
+  "catalog": {
+    "body": "{\"action\": \"catalog\"}"
+  },
+
+  "get_cart": {
+    "body": "{\"action\": \"get\", \"customer_id\": \"YOUR_CUSTOMER_ID\"}"
+  },
+
+  "set_cart": {
+    "body": "{\"action\": \"set\", \"customer_id\": \"YOUR_CUSTOMER_ID\", \"items\": [{\"name\": \"Milk (500ml)\", \"qty\": 2}, {\"name\": \"Bread\", \"qty\": 1}]}"
+  },
+
+  "generate_bill": {
+    "body": "{\"customer_id\": \"YOUR_CUSTOMER_ID\"}"
+  }
+}

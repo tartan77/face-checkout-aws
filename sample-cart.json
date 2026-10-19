@@ -1,0 +1,7 @@
+{
+  "customer_id": "YOUR_CUSTOMER_ID",
+  "items": [
+    { "name": "Milk (500ml)", "price": 30, "qty": 2 },
+    { "name": "Bread", "price": 45, "qty": 1 }
+  ]
+}
