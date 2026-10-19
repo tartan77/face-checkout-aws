@@ -68,6 +68,6 @@ README.md
 - `/bill` and `/cart` trust the `customer_id` sent by the browser. A short-lived signed token from `/identify` (or Cognito) would fix this.
 - The API is open (CORS `*` during development). For production, restrict the origin and add throttling.
 
-## Cleanup
-
-Delete the Face Collection, Lambda functions, API, DynamoDB tables, CloudFront distribution and S3 bucket when finished, to avoid charges.
+## Demo
+The live site was taken down after submission to avoid AWS charges.
+Screenshots: see the screenshots folder.
