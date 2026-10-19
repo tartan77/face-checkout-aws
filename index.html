@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0F4C3A; --green-d:#0A3A2C; --yellow:#FFC93C; --ink:#171C1A; --muted:#5E6762;
+  --soft:#F2F4F1; --line:#DFE3DE; --bad:#D8402E;
+  --font:"Schibsted Grotesk","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--ink);background:#fff;line-height:1.5;min-height:100vh;overflow-x:hidden;font-feature-settings:"tnum"}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+svg{display:block}
+
+/* ---------- shared ---------- */
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:-.04em}
+.brand svg{width:32px;height:32px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 26px;border-radius:12px;font-weight:700;font-size:1rem;transition:background .15s,transform .15s,color .15s,border-color .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn-yellow{background:var(--yellow);color:var(--ink)}
+.btn-yellow:hover:not([disabled]){background:#FFD460}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover:not([disabled]){background:var(--green-d)}
+.btn-outline-w{border:2px solid rgba(255,255,255,.7);color:#fff}
+.btn-outline-w:hover{background:rgba(255,255,255,.12);border-color:#fff}
+.btn-outline{border:2px solid var(--ink)}
+.btn-outline:hover{background:var(--ink);color:#fff}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-weight:600;padding:8px 0}
+.back:hover{color:var(--ink)}
+.back svg{width:18px;height:18px}
+.ico{fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- 1. welcome ---------- */
+#s-welcome{background:var(--green);color:#fff}
+#s-welcome .brand svg path{stroke:var(--ink)}
+.w-wrap{max-width:1240px;margin:0 auto;padding:30px 32px 34px;min-height:100vh;display:flex;flex-direction:column}
+.w-grid{flex:1;display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center;padding:30px 0}
+.w-copy h1{font-weight:800;font-size:clamp(2.7rem,6.2vw,5.6rem);line-height:.98;letter-spacing:-.045em}
+.w-copy p{margin:26px 0 36px;font-size:1.2rem;color:rgba(255,255,255,.82);max-width:27em}
+.w-cta{display:flex;flex-wrap:wrap;gap:14px}
+.w-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.88rem;color:rgba(255,255,255,.65)}
+.w-foot button{color:rgba(255,255,255,.85);text-decoration:underline;text-underline-offset:3px}
+.mosaic{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px;margin-left:auto;width:100%}
+.mosaic .col{display:flex;flex-direction:column;gap:16px}
+.mosaic .col.off{margin-top:56px}
+.tile{position:relative;border-radius:20px;background:var(--t,#D6E6F2);display:grid;place-items:center;aspect-ratio:1/1.08}
+.tile .ico{width:52%;height:52%}
+.tile .chip{position:absolute;left:12px;bottom:12px;background:#fff;color:var(--ink);font-weight:700;font-size:.82rem;padding:6px 10px;border-radius:8px;display:flex;gap:8px}
+.tile .chip span{color:var(--muted);font-weight:600}
+.tile.scan{background:var(--green-d);aspect-ratio:1/1.3;border:2px solid rgba(255,255,255,.18)}
+.tile.scan .ico{stroke:#fff;width:46%;height:46%}
+.tile.scan .br{position:absolute;inset:22% 18% 26%;--c:var(--yellow);
+  background:linear-gradient(var(--c),var(--c)) top left/22px 4px no-repeat,linear-gradient(var(--c),var(--c)) top left/4px 22px no-repeat,
+  linear-gradient(var(--c),var(--c)) top right/22px 4px no-repeat,linear-gradient(var(--c),var(--c)) top right/4px 22px no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom left/22px 4px no-repeat,linear-gradient(var(--c),var(--c)) bottom left/4px 22px no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom right/22px 4px no-repeat,linear-gradient(var(--c),var(--c)) bottom right/4px 22px no-repeat}
+.tile.scan .chip i{width:9px;height:9px;border-radius:50%;background:#16a05f;margin-top:6px}
+
+/* ---------- 2/3. enroll + scan ---------- */
+.c-wrap{max-width:1100px;margin:0 auto;padding:26px 32px 52px;min-height:100vh;display:flex;flex-direction:column}
+.c-grid{flex:1;display:grid;grid-template-columns:1fr minmax(300px,400px);gap:72px;align-items:center}
+.c-copy h2{font-weight:800;font-size:clamp(2.3rem,4.6vw,3.9rem);line-height:1;letter-spacing:-.045em;margin-bottom:16px}
+.c-copy .lead{font-size:1.12rem;color:var(--muted);max-width:27em;margin-bottom:28px}
+.field{display:block;margin-bottom:18px}
+.field span{display:block;font-weight:600;font-size:.92rem;margin-bottom:8px}
+.field input[type=text]{width:100%;max-width:420px;padding:15px 16px;border-radius:12px;background:#fff;border:1.5px solid #C5CCC6;font-size:1.05rem}
+.field input[type=text]::placeholder{color:#8A938D}
+.field input[type=text]:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,76,58,.18)}
+.consent{display:flex;gap:14px;align-items:flex-start;max-width:440px;margin-bottom:28px;font-size:.93rem;color:var(--muted);cursor:pointer}
+.consent input{appearance:none;flex:none;width:24px;height:24px;border-radius:7px;border:1.5px solid #9AA39D;background:#fff;display:grid;place-items:center;cursor:pointer;margin-top:1px}
+.consent input:checked{background:var(--green);border-color:var(--green)}
+.consent input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.status{min-height:1.6em;margin-top:18px;font-size:.96rem;color:var(--muted)}
+.status.err{color:var(--bad);font-weight:600}
+
+.frame{position:relative;width:100%;aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:var(--green-d)}
+.frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.oval{position:absolute;left:17%;right:17%;top:12%;bottom:21%;border-radius:50%;border:3px solid var(--yellow);box-shadow:0 0 0 999px rgba(10,58,44,.62);overflow:hidden}
+.oval i{position:absolute;left:0;right:0;top:0;height:3px;background:var(--yellow);opacity:0}
+.frame.scanning .oval i{opacity:1;animation:sweepy 1.8s ease-in-out infinite}
+@keyframes sweepy{0%,100%{top:0}50%{top:calc(100% - 3px)}}
+.frame .hint{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:.9rem;font-weight:600;color:#fff}
+.cam-msg{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;text-align:center;padding:36px;background:var(--green-d);color:#fff}
+.cam-msg.show{display:flex}
+
+.confirm{display:none;max-width:430px;border-radius:18px;padding:24px;background:var(--soft);border:1px solid var(--line);animation:rise .3s ease}
+.confirm.show{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.confirm small{color:var(--muted);font-size:.95rem;font-weight:600}
+.confirm .nm{font-weight:800;font-size:2.1rem;letter-spacing:-.04em;line-height:1.1;margin:6px 0 18px}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:8px}
+.bar i{display:block;height:100%;width:0;background:var(--green);transition:width .8s ease}
+.confirm .cf{font-size:.88rem;color:var(--muted);margin-bottom:22px}
+.confirm .row{display:flex;gap:12px;flex-wrap:wrap}
+.confirm .btn{padding:14px 22px}
+
+/* ---------- 4. shop ---------- */
+.s-wrap{max-width:1280px;margin:0 auto;padding:24px 32px 130px}
+.s-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:44px}
+.who{display:flex;align-items:center;gap:12px}
+.who .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--yellow)}
+.who .nmid{line-height:1.2}
+.who .nmid b{display:block;font-weight:700;font-size:.95rem}
+.who .nmid span{font-size:.78rem;color:var(--muted)}
+.who button{font-weight:600;font-size:.9rem;padding:9px 16px;border-radius:10px;border:1.5px solid var(--line)}
+.who button:hover{border-color:var(--ink)}
+.s-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:30px}
+.s-head h2{font-weight:800;font-size:clamp(2.1rem,4.6vw,3.6rem);line-height:1;letter-spacing:-.05em}
+.s-head p{margin-top:10px;color:var(--muted);font-size:1.08rem}
+.search{position:relative;width:min(100%,300px)}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.search input{width:100%;padding:14px 16px 14px 42px;border-radius:12px;background:#fff;border:1.5px solid #C5CCC6}
+.search input:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px rgba(15,76,58,.18)}
+.s-grid{display:grid;grid-template-columns:1fr 390px;gap:40px;align-items:start}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:26px 18px}
+.pcard{display:flex;flex-direction:column;gap:12px}
+.plate{aspect-ratio:1/1;border-radius:18px;background:var(--t,#D6E6F2);display:grid;place-items:center;transition:box-shadow .15s}
+.plate .ico{width:50%;height:50%;transition:transform .25s}
+.pcard:hover .plate .ico{transform:scale(1.08) rotate(-3deg)}
+.pcard.has .plate{box-shadow:inset 0 0 0 3px var(--green)}
+.pinfo{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pinfo .nm{font-weight:700;font-size:1.05rem;line-height:1.25}
+.pinfo .pr{font-weight:700;color:var(--muted);white-space:nowrap}
+.add{width:100%;padding:12px;border-radius:10px;background:var(--ink);color:#fff;font-weight:700;transition:background .15s}
+.add:hover{background:var(--green)}
+.step{display:flex;align-items:center;justify-content:space-between;border:2px solid var(--green);border-radius:10px;padding:3px}
+.step button{width:36px;height:36px;border-radius:7px;display:grid;place-items:center;background:var(--green);color:#fff}
+.step button:hover{background:var(--green-d)}
+.step button svg{width:16px;height:16px}
+.step b{font-weight:800;font-size:1.05rem}
+.skel{aspect-ratio:1/1.35;border-radius:18px;background:linear-gradient(100deg,var(--soft) 30%,#E8EBE6 50%,var(--soft) 70%) 0 0/200% 100%;animation:sh 1.3s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.none{grid-column:1/-1;padding:60px 0;text-align:center;color:var(--muted)}
+
+.basket{position:sticky;top:22px;border-radius:22px;background:var(--soft);border:1px solid var(--line);overflow:hidden}
+.b-head{display:flex;justify-content:space-between;align-items:center;padding:24px 26px 12px}
+.b-head h3{font-weight:800;font-size:1.5rem;letter-spacing:-.04em}
+.b-head .cnt{min-width:30px;height:30px;padding:0 10px;display:grid;place-items:center;border-radius:99px;background:var(--ink);color:#fff;font-weight:700;font-size:.9rem}
+.b-empty{padding:30px 26px 40px;text-align:center;color:var(--muted)}
+.b-empty svg{width:56px;height:56px;margin:0 auto 14px}
+.b-empty .ico{stroke:#9AA39D;stroke-width:1.5}
+.b-list{list-style:none;max-height:min(44vh,400px);overflow:auto;padding:0 26px}
+.line{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.line .plate{aspect-ratio:1;border-radius:12px}
+.line .plate .ico{width:62%;height:62%}
+.line .t b{display:block;font-weight:700;font-size:.98rem;line-height:1.2}
+.line .t small{color:var(--muted);font-size:.82rem}
+.line .r{text-align:right}
+.line .r .amt{font-weight:800;margin-bottom:6px}
+.mini{display:inline-flex;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:9px}
+.mini button{width:26px;height:26px;display:grid;place-items:center;border-radius:7px}
+.mini button:hover{background:var(--soft)}
+.mini button svg{width:12px;height:12px}
+.mini span{min-width:22px;text-align:center;font-size:.88rem;font-weight:700}
+.b-foot{padding:20px 26px 26px;border-top:1px solid var(--line);background:#fff}
+.sum{display:flex;justify-content:space-between;color:var(--muted);font-size:.93rem;margin-bottom:6px}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 20px}
+.tot span{font-weight:700}
+.tot b{font-weight:800;font-size:2.3rem;letter-spacing:-.05em;line-height:1}
+.b-foot .btn{width:100%}
+.b-for{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:.83rem;color:var(--muted)}
+.b-for svg{width:16px;height:16px}
+.b-for .ico{stroke:currentColor;stroke-width:1.8}
+
+/* ---------- 5. receipt ---------- */
+#s-receipt{background:var(--green);color:#fff}
+.r-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 20px 70px;gap:24px;text-align:center}
+.okring{width:72px;height:72px}
+.okring circle{fill:var(--yellow);stroke:none;transform-origin:center;animation:pop .4s ease both}
+.okring path{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:44;stroke-dashoffset:44;animation:draw .4s .35s ease forwards}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.r-wrap h2{font-weight:800;font-size:clamp(2.2rem,4.6vw,3.6rem);letter-spacing:-.05em;line-height:1}
+.r-wrap .sub{color:rgba(255,255,255,.8);margin-top:-8px;font-size:1.1rem}
+.ticket{position:relative;width:min(100%,400px);text-align:left;background:#fff;color:var(--ink);padding:30px 28px 32px;animation:print 1.1s .5s cubic-bezier(.4,0,.2,1) both}
+.ticket::after{content:"";position:absolute;left:0;right:0;bottom:-14px;height:14px;background:linear-gradient(135deg,#fff 25%,transparent 25%) -14px 0,linear-gradient(225deg,#fff 25%,transparent 25%) -14px 0;background-size:28px 28px}
+@keyframes print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 -20px 0)}}
+.ticket .tb{display:flex;justify-content:space-between;align-items:center}
+.ticket .tb .brand{font-size:1.2rem}
+.ticket .tb .brand svg path{stroke:var(--ink)}
+.ticket .paid{font-weight:800;font-size:.82rem;color:var(--green);background:#DDF3E7;padding:5px 12px;border-radius:8px}
+.ticket .meta{font-size:.84rem;color:var(--muted);line-height:1.6;margin:12px 0 4px}
+.ticket hr{border:0;border-top:1.5px dashed #C5CCC6;margin:16px 0}
+.ticket .it{display:grid;grid-template-columns:1fr auto;gap:12px;padding:5px 0;font-weight:600}
+.ticket .it small{display:block;color:var(--muted);font-weight:500;font-size:.82rem}
+.ticket .gt{display:flex;justify-content:space-between;align-items:baseline}
+.ticket .gt span{font-weight:700}
+.ticket .gt b{font-weight:800;font-size:2.1rem;letter-spacing:-.05em}
+.ticket .bc{margin-top:22px}
+.ticket .bc svg{width:100%;height:44px;fill:var(--ink)}
+.ticket .bc small{display:block;text-align:center;font-size:.76rem;color:var(--muted);margin-top:6px;letter-spacing:.1em}
+
+/* toast + setup */
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);padding:14px 22px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:92vw;text-align:center;background:var(--ink);color:#fff}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+#setup{position:fixed;inset:0;z-index:100;background:rgba(10,58,44,.85);display:none;place-items:center;padding:20px}
+#setup.show{display:grid}
+#setup form{background:#fff;color:var(--ink);border-radius:20px;padding:30px;max-width:500px;width:100%}
+#setup h3{font-weight:800;font-size:1.5rem;letter-spacing:-.03em;margin-bottom:8px}
+#setup p{color:var(--muted);margin-bottom:18px;font-size:.95rem}
+#setup input{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid #C5CCC6;margin-bottom:16px}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .w-grid{grid-template-columns:1fr;gap:40px}
+  .mosaic{margin:0;max-width:none}
+  .mosaic .col.off{margin-top:30px}
+  .tile .chip{left:8px;bottom:8px;font-size:.74rem;padding:5px 8px}
+  .c-grid{grid-template-columns:1fr;gap:30px}
+  .frame{max-width:320px;margin:0 auto;order:-1}
+  .s-grid{grid-template-columns:1fr}
+  .basket{position:fixed;left:10px;right:10px;bottom:10px;top:auto;z-index:50;border-radius:20px;background:#fff;box-shadow:0 -6px 30px rgba(0,0,0,.14)}
+  .b-head{cursor:pointer;padding:16px 20px 10px}
+  .b-list,.b-empty{display:none}
+  .basket.open .b-list{display:block;max-height:34vh}
+  .basket.open .b-empty{display:block}
+  .b-foot{padding:12px 20px 16px;border-top:0}
+  .tot{margin:8px 0 12px}.tot b{font-size:1.7rem}
+  .b-for{display:none}
+  .s-wrap{padding-bottom:210px}
+}
+@media (max-width:560px){
+  .w-wrap,.c-wrap,.s-wrap{padding-left:18px;padding-right:18px}
+  .shelf{grid-template-columns:repeat(2,1fr);gap:20px 12px}
+  .pinfo{flex-direction:column;gap:2px}
+  .search{width:100%}
+  .who .nmid{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 1. WELCOME ============ -->
+<section class="screen active" id="s-welcome" aria-label="Welcome">
+  <div class="w-wrap">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#FFC93C"/><path d="M7 13c1.5 3 5.5 3 7 0M18 13c1.5 3 5.5 3 7 0M11 21c3 2.5 7 2.5 10 0" fill="none" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Blink
+    </div>
+    <div class="w-grid">
+      <div class="w-copy">
+        <h1>Groceries with no checkout line.</h1>
+        <p>Fill your basket, glance at the camera, and your bill is done. No phone number, no card to find, no waiting.</p>
+        <div class="w-cta">
+          <button class="btn btn-yellow" id="goScan">Check out with my face</button>
+          <button class="btn btn-outline-w" id="goEnroll">Create face profile</button>
+        </div>
+      </div>
+      <div class="mosaic" id="mosaic" aria-hidden="true"></div>
+    </div>
+    <div class="w-foot">
+      <span>Your face is stored as a numeric template, never as a photo. Ask for it to be deleted any time.</span>
+      <button id="apiBtn" type="button">API settings</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. ENROLL ============ -->
+<section class="screen" id="s-enroll" aria-label="Create face profile">
+  <div class="c-wrap">
+    <div><button class="back" data-go="welcome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button></div>
+    <div class="c-grid">
+      <div class="c-copy">
+        <h2>Create your face profile.</h2>
+        <p class="lead">Tell us your name and look at the camera once. Next time, the counter already knows you.</p>
+        <label class="field"><span>Your name</span><input type="text" id="enName" placeholder="Full name" autocomplete="name" maxlength="60"></label>
+        <label class="consent"><input type="checkbox" id="enConsent"><span>I agree that Blink may store my face data to identify me at checkout, and that I can ask for it to be deleted at any time.</span></label>
+        <button class="btn btn-green" id="enBtn">Capture and create profile</button>
+        <p class="status" id="enMsg" role="status" aria-live="polite">Face the light and remove sunglasses for the best result.</p>
+      </div>
+      <div class="frame" id="enFrame">
+        <video id="vEnroll" autoplay playsinline muted></video>
+        <div class="oval"><i></i></div>
+        <div class="hint">Center your face in the oval</div>
+        <div class="cam-msg" id="enCamMsg"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. SCAN ============ -->
+<section class="screen" id="s-scan" aria-label="Scan">
+  <div class="c-wrap">
+    <div><button class="back" data-go="welcome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button></div>
+    <div class="c-grid">
+      <div class="c-copy">
+        <h2>Look at the camera.</h2>
+        <p class="lead">Stand in good light and face the lens. We find your profile, then you confirm it is you.</p>
+        <button class="btn btn-green" id="scBtn">Scan my face</button>
+        <div class="confirm" id="scConfirm">
+          <small>Welcome back. Is this you?</small>
+          <div class="nm" id="scName"></div>
+          <div class="bar"><i id="scBar"></i></div>
+          <div class="cf" id="scConf"></div>
+          <div class="row">
+            <button class="btn btn-green" id="scYes">Yes, that's me</button>
+            <button class="btn btn-outline" id="scNo">Not me</button>
+          </div>
+        </div>
+        <p class="status" id="scMsg" role="status" aria-live="polite"></p>
+      </div>
+      <div class="frame" id="scFrame">
+        <video id="vScan" autoplay playsinline muted></video>
+        <div class="oval"><i></i></div>
+        <div class="hint">Center your face in the oval</div>
+        <div class="cam-msg" id="scCamMsg"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. SHOP ============ -->
+<section class="screen" id="s-shop" aria-label="Shop">
+  <div class="s-wrap">
+    <div class="s-top">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#FFC93C"/><path d="M7 13c1.5 3 5.5 3 7 0M18 13c1.5 3 5.5 3 7 0M11 21c3 2.5 7 2.5 10 0" fill="none" stroke="#171C1A" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Blink
+      </div>
+      <div class="who">
+        <div class="av" id="whoAv"></div>
+        <div class="nmid"><b id="whoName"></b><span id="whoId"></span></div>
+        <button id="leaveBtn">Not you? Leave</button>
+      </div>
+    </div>
+    <div class="s-head">
+      <div>
+        <h2 id="hello">Hello.</h2>
+        <p>Add what you need. Checkout happens with a glance.</p>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search products" aria-label="Search products">
+      </label>
+    </div>
+    <div class="s-grid">
+      <div class="shelf" id="shelf"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <aside class="basket" id="basket" aria-label="Your basket">
+        <div class="b-head" id="bHead"><h3>Basket</h3><span class="cnt" id="bCnt">0</span></div>
+        <div class="b-empty" id="bEmpty">
+          <svg class="ico" viewBox="0 0 48 48"><path d="M12 16h24l3 26H9z"/><path d="M18 22v-6a6 6 0 0 1 12 0v6"/></svg>
+          Your basket is empty.<br>Add a product to get started.
+        </div>
+        <ul class="b-list" id="bList"></ul>
+        <div class="b-foot">
+          <div class="sum"><span>Subtotal</span><span id="bSub">₹0</span></div>
+          <div class="sum"><span>Delivery</span><span>Free</span></div>
+          <div class="tot"><span>Total</span><b id="bTot">₹0</b></div>
+          <button class="btn btn-green" id="payBtn">Checkout</button>
+          <div class="b-for"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 10v1M15 10v1M9.5 15c1.5 1.2 3.5 1.2 5 0"/></svg><span id="bFor">Charged to your face profile</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. RECEIPT ============ -->
+<section class="screen" id="s-receipt" aria-label="Receipt">
+  <div class="r-wrap">
+    <svg class="okring" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="38"/><path d="M26 41l10 10 19-21"/></svg>
+    <h2>You're all set.</h2>
+    <p class="sub">Your bill is ready. Walk out whenever you like.</p>
+    <div class="ticket" id="ticket"></div>
+    <button class="btn btn-outline-w" id="doneBtn" style="margin-top:12px">Done</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div id="setup">
+  <form id="setupForm">
+    <h3>Connect your API</h3>
+    <p>Paste your API Gateway Invoke URL. It is saved only in this browser.</p>
+    <input id="setupInput" type="url" placeholder="https://abc123.execute-api.ap-south-1.amazonaws.com" required>
+    <button class="btn btn-green" type="submit">Save and start</button>
+  </form>
+</div>
+
+<script>
+/* ===== Config ===== */
+const DEFAULT_API = "https://6n161njkyg.execute-api.ap-south-1.amazonaws.com";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+
+let API = DEFAULT_API;
+try { API = localStorage.getItem('pm_api') || DEFAULT_API; } catch (e) {}
+API = API.replace(/\/+$/, '');
+
+let toastT;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3400);
+}
+
+async function post(path, data) {
+  try {
+    const r = await fetch(API + path, { method: 'POST', body: JSON.stringify(data) });
+    let body = {};
+    try { body = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, data: body };
+  } catch (e) {
+    return { ok: false, status: 0, data: { error: 'Could not reach the server. Check your API URL and internet connection.' } };
+  }
+}
+
+/* ---------- camera ---------- */
+let stream = null;
+async function startCam(video, msgEl) {
+  msgEl.classList.remove('show');
+  try {
+    if (!stream) stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 960 } }, audio: false });
+    video.srcObject = stream;
+    await video.play().catch(() => {});
+  } catch (e) {
+    msgEl.textContent = 'The camera is blocked. Allow camera access in the address bar, then reload the page.';
+    msgEl.classList.add('show');
+  }
+}
+function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; }
+function snap(video) {
+  const w = video.videoWidth, h = video.videoHeight;
+  if (!w || !h) return null;
+  const k = Math.min(1, 720 / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.9);
+}
+
+/* ---------- screens ---------- */
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-' + name));
+  window.scrollTo(0, 0);
+  if (name === 'enroll') { $('enMsg').className = 'status'; startCam($('vEnroll'), $('enCamMsg')); }
+  else if (name === 'scan') { resetScan(); startCam($('vScan'), $('scCamMsg')); }
+  else stopCam();
+}
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+$('goEnroll').onclick = () => go('enroll');
+$('goScan').onclick = () => go('scan');
+
+let me = null, catalog = {}, qty = {};
+
+function setBusy(btn, busy, label) {
+  if (busy) { btn.dataset.label = btn.textContent; btn.textContent = label; btn.disabled = true; }
+  else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; }
+}
+
+/* ---------- enroll ---------- */
+$('enBtn').onclick = async () => {
+  const msg = $('enMsg'), name = $('enName').value.trim();
+  msg.className = 'status err';
+  if (!name) return (msg.textContent = 'Please enter your name first.');
+  if (!$('enConsent').checked) return (msg.textContent = 'Please tick the consent box to continue.');
+  const image = snap($('vEnroll'));
+  if (!image) return (msg.textContent = 'The camera is not ready yet. Wait a moment and try again.');
+  setBusy($('enBtn'), true, 'Creating profile…');
+  $('enFrame').classList.add('scanning'); msg.className = 'status'; msg.textContent = 'Reading your face…';
+  const r = await post('/enroll', { image, name, consent: true });
+  $('enFrame').classList.remove('scanning');
+  setBusy($('enBtn'), false);
+  if (!r.ok) {
+    msg.className = 'status err';
+    msg.textContent = r.status === 409 ? 'This face already has a profile. Go back and choose "Check out with my face".' : (r.data.error || 'Could not create the profile. Please try again.');
+    return;
+  }
+  me = { id: r.data.customer_id, name: r.data.name };
+  toast('Profile created. Welcome, ' + me.name.split(' ')[0] + '.');
+  enterShop();
+};
+
+/* ---------- scan ---------- */
+let pending = null;
+function resetScan() {
+  pending = null;
+  $('scConfirm').classList.remove('show');
+  $('scBar').style.width = '0';
+  $('scBtn').style.display = '';
+  $('scMsg').className = 'status'; $('scMsg').textContent = '';
+  const v = $('vScan'); if (v.srcObject) v.play().catch(() => {});
+}
+$('scBtn').onclick = async () => {
+  const msg = $('scMsg');
+  const image = snap($('vScan'));
+  if (!image) { msg.className = 'status err'; msg.textContent = 'The camera is not ready yet. Wait a moment and try again.'; return; }
+  setBusy($('scBtn'), true, 'Scanning…');
+  $('scFrame').classList.add('scanning'); msg.className = 'status'; msg.textContent = 'Looking for your profile…';
+  const r = await post('/identify', { image });
+  $('scFrame').classList.remove('scanning');
+  setBusy($('scBtn'), false);
+  if (!r.ok) {
+    msg.className = 'status err';
+    msg.textContent = r.status === 404 && r.data.error === 'No match found'
+      ? 'No profile found for this face. Try better light, or go back and create a profile.'
+      : (r.data.error || 'Scan failed. Please try again.');
+    return;
+  }
+  pending = { id: r.data.customer_id, name: r.data.name };
+  const conf = Number(r.data.confidence);
+  $('scName').textContent = pending.name;
+  $('scConf').textContent = isFinite(conf) ? conf.toFixed(1) + '% match confidence' : '';
+  msg.textContent = '';
+  $('scBtn').style.display = 'none';
+  $('vScan').pause();
+  $('scConfirm').classList.add('show');
+  requestAnimationFrame(() => requestAnimationFrame(() => { $('scBar').style.width = (isFinite(conf) ? Math.min(100, conf) : 100) + '%'; }));
+};
+$('scYes').onclick = () => { me = pending; enterShop(); };
+$('scNo').onclick = resetScan;
+
+/* ---------- product icons (line art) ---------- */
+const ICONS = [
+  ['milk','<path d="M14 20l5-9h10l5 9v24H14z"/><path d="M14 20h20"/><circle cx="24" cy="32" r="4"/>'],
+  ['bread','<path d="M10 24c-3-8 4-14 14-14s17 6 14 14v14a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2z"/><path d="M18 20l4 7M26 18l4 7M34 22l2 4"/>'],
+  ['egg','<path d="M17 8c5 0 8 8 8 14a8 8 0 0 1-16 0c0-6 3-14 8-14z"/><path d="M33 16c4 0 6 6 6 11a6 6 0 0 1-12 0c0-5 2-11 6-11z"/>'],
+  ['rice','<path d="M17 8h14l-2 6c6 4 9 10 9 18 0 6-3 10-9 10H19c-6 0-9-4-9-10 0-8 3-14 9-18z"/><path d="M17 14h14"/><path d="M19 30l5-4 5 4M19 36l5-4 5 4"/>'],
+  ['tea','<path d="M9 22h24v8a10 10 0 0 1-10 10h-4A10 10 0 0 1 9 30z"/><path d="M33 25h3a4 4 0 0 1 0 8h-4"/><path d="M15 8c-2 3 2 4 0 7M21 8c-2 3 2 4 0 7M27 8c-2 3 2 4 0 7"/><path d="M7 44h28"/>'],
+  ['coffee','<path d="M9 22h24v8a10 10 0 0 1-10 10h-4A10 10 0 0 1 9 30z"/><path d="M33 25h3a4 4 0 0 1 0 8h-4"/><path d="M15 8c-2 3 2 4 0 7M21 8c-2 3 2 4 0 7M27 8c-2 3 2 4 0 7"/><path d="M7 44h28"/>'],
+  ['biscuit','<circle cx="24" cy="24" r="16"/><circle cx="18" cy="19" r="1.4"/><circle cx="29" cy="18" r="1.4"/><circle cx="24" cy="27" r="1.4"/><circle cx="16" cy="29" r="1.4"/><circle cx="31" cy="30" r="1.4"/>'],
+  ['apple','<path d="M24 16c-5-4-14-1-14 9 0 9 6 18 11 18 2 0 2-1 3-1s1 1 3 1c5 0 11-9 11-18 0-10-9-13-14-9z"/><path d="M24 16c0-4 2-7 5-8"/><path d="M26 11c3-3 7-2 8-1-1 3-5 4-8 1z"/>'],
+  ['sugar','<path d="M14 12h20v5H14z"/><path d="M16 17h16v23a3 3 0 0 1-3 3H19a3 3 0 0 1-3-3z"/><path d="M20 29h6v6h-6zM28 32h4v4h-4z"/>'],
+  ['juice','<path d="M16 14h16l-2 28H18z"/><path d="M16 22h16"/><path d="M26 14l3-7h5"/>'],
+  ['water','<path d="M24 6c8 9 12 15 12 22a12 12 0 0 1-24 0c0-7 4-13 12-22z"/>'],
+  ['butter','<path d="M8 22l8-8h24v14l-8 8H8z"/><path d="M8 22h24l8-8M32 22v14"/>'],
+  ['cheese','<path d="M6 30l36-12v18H6z"/><circle cx="18" cy="31" r="2.4"/><circle cx="30" cy="27" r="1.8"/>'],
+  ['banana','<path d="M10 14c2 14 12 24 28 24-4 4-10 6-16 4-8-3-14-12-12-28z"/><path d="M10 14l5-2"/>'],
+  ['oil','<path d="M19 8h10v8l4 6v18a3 3 0 0 1-3 3H18a3 3 0 0 1-3-3V22l4-6z"/><path d="M15 28h18"/>'],
+  ['salt','<path d="M17 8h14v7H17z"/><path d="M15 15h18l-2 27H17z"/><path d="M21 24h2M25 28h2M21 32h2"/>'],
+  ['chips','<path d="M10 12h28l-3 30H13z"/><path d="M10 12c4 4 24 4 28 0"/><path d="M18 26h12"/>'],
+  ['soap','<rect x="8" y="18" width="32" height="18" rx="6"/><path d="M16 14c0-3 3-4 4-1M28 12c0-3 3-4 4-1"/>']
+];
+const BAG = '<path d="M12 16h24l3 26H9z"/><path d="M18 22v-6a6 6 0 0 1 12 0v6"/>';
+const TILES = ['#D6E6F2', '#F4DDA6', '#F7D3CB', '#D3E8CF', '#E3D8F0', '#F9E0BE'];
+function iconFor(n) {
+  const l = n.toLowerCase();
+  const m = ICONS.find(i => l.includes(i[0]));
+  return `<svg class="ico" viewBox="0 0 48 48" aria-hidden="true">${m ? m[1] : BAG}</svg>`;
+}
+const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const MINUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+
+/* ---------- welcome mosaic ---------- */
+(function () {
+  const prod = (n, p, c) => `<div class="tile" style="--t:${c}">${iconFor(n)}<div class="chip">${n.replace(/\s*\(.*\)/, '')}<span>${inr(p)}</span></div></div>`;
+  const scan = `<div class="tile scan"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="18" r="8"/><path d="M8 42c2-9 9-13 16-13s14 4 16 13"/></svg><div class="br"></div><div class="chip"><i></i>Face matched</div></div>`;
+  $('mosaic').innerHTML =
+    `<div class="col">${prod('Milk (500ml)', 30, TILES[0])}${scan}${prod('Tea (100g)', 55, TILES[4])}</div>` +
+    `<div class="col off">${prod('Bread', 45, TILES[1])}${prod('Apples (1kg)', 150, TILES[2])}${prod('Eggs (6)', 60, TILES[5])}</div>`;
+})();
+
+/* ---------- shop ---------- */
+function greeting() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
+
+async function enterShop() {
+  stopCam();
+  qty = {}; $('q').value = '';
+  const first = me.name.split(' ')[0];
+  $('hello').textContent = greeting() + ', ' + first + '.';
+  $('whoName').textContent = me.name;
+  $('whoId').textContent = 'Profile ' + me.id;
+  $('whoAv').textContent = me.name.trim().charAt(0).toUpperCase();
+  $('bFor').textContent = 'Charged to ' + first + "'s face profile";
+  go('shop');
+  $('basket').classList.remove('open');
+  render();
+  if (!Object.keys(catalog).length) {
+    const c = await post('/cart', { action: 'catalog' });
+    if (c.ok && c.data.catalog) catalog = c.data.catalog;
+    else toast(c.data.error || 'Could not load products.');
+  }
+  const g = await post('/cart', { action: 'get', customer_id: me.id });
+  if (g.ok && Array.isArray(g.data.items)) g.data.items.forEach(i => { qty[i.name] = Number(i.qty) || 0; });
+  render();
+}
+
+function change(name, d) {
+  const n = Math.max(0, Math.min(99, (qty[name] || 0) + d));
+  if (n) qty[name] = n; else delete qty[name];
+  render(); scheduleSync();
+}
+
+function render() {
+  const names = Object.keys(catalog);
+  const term = $('q').value.trim().toLowerCase();
+  const shown = names.filter(n => n.toLowerCase().includes(term));
+  $('shelf').innerHTML = names.length
+    ? (shown.length ? shown.map(n => {
+        const i = names.indexOf(n), q = qty[n] || 0;
+        return `<div class="pcard${q ? ' has' : ''}">
+          <div class="plate" style="--t:${TILES[i % TILES.length]}">${iconFor(n)}</div>
+          <div class="pinfo"><span class="nm">${esc(n)}</span><span class="pr">${inr(catalog[n])}</span></div>
+          ${q ? `<div class="step"><button data-n="${esc(n)}" data-d="-1" aria-label="Remove one ${esc(n)}">${MINUS}</button><b>${q}</b><button data-n="${esc(n)}" data-d="1" aria-label="Add one ${esc(n)}">${PLUS}</button></div>`
+              : `<button class="add" data-n="${esc(n)}" data-d="1">Add</button>`}
+        </div>`;
+      }).join('') : '<div class="none">No products match your search.</div>')
+    : '<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+
+  const inCart = Object.keys(qty).filter(n => catalog[n] != null);
+  $('bList').innerHTML = inCart.map(n => {
+    const i = names.indexOf(n);
+    return `<li class="line">
+      <div class="plate" style="--t:${TILES[i % TILES.length]}">${iconFor(n)}</div>
+      <div class="t"><b>${esc(n)}</b><small>${inr(catalog[n])} each</small></div>
+      <div class="r"><div class="amt">${inr(qty[n] * catalog[n])}</div>
+        <div class="mini"><button data-n="${esc(n)}" data-d="-1" aria-label="Remove one">${MINUS}</button><span>${qty[n]}</span><button data-n="${esc(n)}" data-d="1" aria-label="Add one">${PLUS}</button></div></div>
+    </li>`;
+  }).join('');
+  $('bEmpty').style.display = inCart.length ? 'none' : '';
+  $('bList').style.display = inCart.length ? '' : 'none';
+  const count = inCart.reduce((s, n) => s + qty[n], 0);
+  const total = inCart.reduce((s, n) => s + qty[n] * catalog[n], 0);
+  $('bCnt').textContent = count;
+  $('bSub').textContent = inr(total);
+  $('bTot').textContent = inr(total);
+  $('payBtn').disabled = !count;
+}
+function onStep(e) { const b = e.target.closest('[data-n]'); if (b) change(b.dataset.n, Number(b.dataset.d)); }
+$('shelf').addEventListener('click', onStep);
+$('bList').addEventListener('click', onStep);
+$('q').addEventListener('input', render);
+$('bHead').addEventListener('click', () => { if (innerWidth <= 900) $('basket').classList.toggle('open'); });
+
+let syncT;
+const cartItems = () => Object.keys(qty).map(name => ({ name, qty: qty[name] }));
+function scheduleSync() { clearTimeout(syncT); syncT = setTimeout(pushCart, 400); }
+async function pushCart() { clearTimeout(syncT); return post('/cart', { action: 'set', customer_id: me.id, items: cartItems() }); }
+
+$('payBtn').onclick = async () => {
+  if (!Object.keys(qty).length) return toast('Add something to your basket first.');
+  setBusy($('payBtn'), true, 'Creating your bill…');
+  const s = await pushCart();
+  if (!s.ok) { setBusy($('payBtn'), false); return toast(s.data.error || 'Could not save your basket.'); }
+  const b = await post('/bill', { customer_id: me.id });
+  setBusy($('payBtn'), false);
+  if (!b.ok) return toast(b.data.error || 'Could not create the bill.');
+  showReceipt(b.data);
+};
+$('leaveBtn').onclick = () => { me = null; qty = {}; go('welcome'); };
+
+/* ---------- receipt ---------- */
+function barcode(id) {
+  let x = 0, bars = '';
+  [...(id + id)].forEach(ch => {
+    const c = ch.charCodeAt(0);
+    for (let k = 0; k < 5; k++) { const w = ((c >> k) & 1) ? 3 : 1.4; if (k % 2 === 0) bars += `<rect x="${x}" y="0" width="${w}" height="44"/>`; x += w + 1; }
+  });
+  return `<svg viewBox="0 0 ${x} 44" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
+}
+function showReceipt(b) {
+  const items = b.items || [];
+  const when = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  $('ticket').innerHTML = `
+    <div class="tb"><div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#FFC93C"/><path d="M7 13c1.5 3 5.5 3 7 0M18 13c1.5 3 5.5 3 7 0M11 21c3 2.5 7 2.5 10 0" fill="none" stroke-width="2.2" stroke-linecap="round"/></svg>Blink</div><span class="paid">Paid</span></div>
+    <div class="meta">Bill ${esc(b.bill_id)}<br>${esc(when)}<br>Billed to ${esc(me ? me.name : '')}</div>
+    <hr>
+    ${items.map(i => `<div class="it"><div>${esc(i.name)}<small>${Number(i.qty)} × ${inr(i.price)}</small></div><div>${inr(Number(i.price) * Number(i.qty))}</div></div>`).join('')}
+    <hr>
+    <div class="gt"><span>Total</span><b>${inr(b.total)}</b></div>
+    <div class="bc">${barcode(String(b.bill_id))}<small>${esc(b.bill_id)}</small></div>`;
+  go('receipt');
+}
+$('doneBtn').onclick = () => { me = null; qty = {}; go('welcome'); };
+
+/* ---------- API settings ---------- */
+function openSetup() { $('setupInput').value = API; $('setup').classList.add('show'); $('setupInput').focus(); }
+$('apiBtn').onclick = openSetup;
+$('setupForm').onsubmit = e => {
+  e.preventDefault();
+  API = $('setupInput').value.trim().replace(/\/+$/, '');
+  try { localStorage.setItem('pm_api', API); } catch (e2) {}
+  $('setup').classList.remove('show');
+  toast('API saved.');
+};
+</script>
+</body>
+</html>
