@@ -1,4 +1,4 @@
-# FaceCart: face-based checkout on AWS
+# Blink: face-based checkout on AWS
 
 Customers check out with their face instead of typing a phone number. A webcam photo is matched against an Amazon Rekognition Face Collection, the customer confirms who they are, builds a cart, and gets a bill.
 
